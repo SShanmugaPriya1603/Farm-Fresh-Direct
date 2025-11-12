@@ -8,23 +8,23 @@ It offers a digital marketplace where farmers can sell their produce directly to
 ## 🚀 Key Features
 
 ### 👩‍🌾 For Consumers
-- 🔐 **User Authentication** – Secure login and registration  
-- 🛒 **Product Catalog** – Browse, search, and filter fresh produce  
-- 🧑‍🌾 **Farmer Profiles** – Build trust and transparency  
-- 📦 **Order Management** – Place and view past orders  
-- 💬 **Feedback System** – Rate and review products and services  
+-  **User Authentication** – Secure login and registration  
+-  **Product Catalog** – Browse, search, and filter fresh produce  
+-  **Farmer Profiles** – Build trust and transparency  
+-  **Order Management** – Place and view past orders  
+-  **Feedback System** – Rate and review products and services  
 
 ### 🚜 For Farmers
-- 👤 **Profile Management** – Manage personal and verification details  
-- 🥦 **Product Management** – Add, update, or remove listings  
-- 📬 **Order Processing** – Manage incoming consumer orders  
-- 🌐 **Multilingual Support (i18n)** – Multi-language interface  
-- 📘 **Information Portal** – Q&A section and soil data resources  
+-  **Profile Management** – Manage personal and verification details  
+-  **Product Management** – Add, update, or remove listings  
+-  **Order Processing** – Manage incoming consumer orders  
+-  **Multilingual Support (i18n)** – Multi-language interface  
+-  **Information Portal** – Q&A section and soil data resources  
 
 ### 🧑‍💼 For Administrators
-- 👥 **User Management** – Verify farmers and view all users  
-- 📊 **Platform Analytics** – Dashboard for sales and user activity  
-- 🧾 **Order Oversight** – Track platform-wide orders  
+-  **User Management** – Verify farmers and view all users  
+-  **Platform Analytics** – Dashboard for sales and user activity  
+-  **Order Oversight** – Track platform-wide orders  
 
 ---
 
@@ -83,17 +83,17 @@ Open `public/index.html` in your browser.
 |-----------|----------------|
 | ![Homepage Screenshot](screenshots/homepage.png) | ![Admin Dashboard Screenshot](screenshots/admin-dashboard.png) |
 
-*(Place your screenshots inside a `screenshots/` folder in your repo.)*
+
 
 ---
 
 ## 🌱 Future Enhancements
-- ⭐ Rating & Review System  
-- 🚚 Live Delivery Tracking  
-- 📈 Advanced Farmer Analytics  
-- 💳 Secure Payment Gateway (Stripe/Razorpay)  
-- 🤖 AI-Powered Crop Recommendations  
-- 📱 Native Mobile Apps (Android/iOS)
+-  Rating & Review System  
+-  Live Delivery Tracking  
+-  Advanced Farmer Analytics  
+-  Secure Payment Gateway (Stripe/Razorpay)  
+-  AI-Powered Crop Recommendations  
+-  Native Mobile Apps (Android/iOS)
 
 ---
 
