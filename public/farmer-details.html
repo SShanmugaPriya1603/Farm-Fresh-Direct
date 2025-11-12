@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <title>Farmer Details</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .profile-container { max-width: 800px; margin: 30px auto; padding: 20px; }
+        .profile-card { background: #fff; border: 1px solid #eee; border-radius: 8px; padding: 30px; text-align: center; }
+        .profile-card h2 { color: #0a7c2f; margin-bottom: 5px; }
+        .profile-card .username { color: #777; margin-bottom: 20px; font-style: italic; }
+        .profile-card .stat-box { background: #f4f4f4; border-radius: 8px; padding: 15px; margin-top: 20px; }
+        .profile-card .stat-number { font-size: 2rem; font-weight: bold; color: #0a7c2f; }
+        .profile-card .stat-label { font-size: 1rem; color: #555; }
+        .details-section { text-align: left; margin-top: 30px; }
+        .details-section h4 { color: #0a7c2f; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="logo">
+                <img src="assets/logo.png" alt="Logo">
+                <a href="/consumer.html" style="text-decoration: none; color: inherit;"><span>Farm Fresh Direct</span></a>
+            </div>
+            <ul class="nav-links">
+                <li><a href="/consumer.html">Dashboard</a></li>
+                <li><a href="/orders.html">My Orders</a></li>
+                <li><a href="/qna.html">Q&A</a></li>
+            </ul>
+            <a href="/index.html" class="btn-login" id="logout-btn">Logout</a>
+        </nav>
+    </header>
+
+    <main class="profile-container">
+        <div id="profile-card" class="profile-card">
+            <p>Loading farmer details...</p>
+        </div>
+    </main>
+
+    <script>
+        document.getElementById('logout-btn').addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.clear();
+            window.location.href = '/index.html';
+        });
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const profileCard = document.getElementById('profile-card');
+            const params = new URLSearchParams(window.location.search);
+            const farmerId = params.get('id');
+
+            if (!farmerId) {
+                profileCard.innerHTML = '<h2>Farmer not found.</h2>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/users/farmer-profile/${farmerId}`);
+                if (!response.ok) throw new Error('Could not load farmer profile.');
+
+                const data = await response.json();
+                const farmerName = data.farmer.name || data.farmer.username;
+
+                profileCard.innerHTML = `
+                    <h2>${farmerName} ${data.farmer.isVerified ? '<i class="fas fa-check-circle" style="color: #0a7c2f;" title="Verified Farmer"></i>' : ''}</h2>
+                    <p class="username">@${data.farmer.username}</p>
+                    
+                    <div class="stat-box">
+                        <div class="stat-number">${data.stats.ordersDelivered}</div>
+                        <div class="stat-label">Successful Deliveries</div>
+                    </div>
+
+                    <div class="details-section">
+                        ${data.farmer.experience ? `
+                            <h4>Experience</h4>
+                            <p>${data.farmer.experience}</p>
+                        ` : ''}
+                        ${data.farmer.awards ? `
+                            <h4 style="margin-top: 20px;">Awards & Achievements</h4>
+                            <p>${data.farmer.awards}</p>
+                        ` : ''}
+                        ${data.farmer.techUsed ? `
+                            <h4 style="margin-top: 20px;">Technology & Methods</h4>
+                            <p>${data.farmer.techUsed}</p>
+                        ` : ''}
+                    </div>
+
+                    <p style="margin-top: 20px; font-size: 0.9em; color: #777;">Member of the Farm Fresh Direct community.</p>
+                `;
+            } catch (error) {
+                console.error(error);
+                profileCard.innerHTML = `<h2>Error loading profile.</h2><p>${error.message}</p>`;
+            }
+        });
+    </script>
+</body>
+</html>

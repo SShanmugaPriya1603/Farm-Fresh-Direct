@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        .lang-switcher-container { margin-left: 20px; }
+        .lang-switcher-container select { padding: 5px; border-radius: 4px; border: 1px solid #ccc; }
+        .nav-actions { display: flex; align-items: center; }
+    </style>
+    <meta charset="UTF-8">
+    <title>Schemes & Insurance</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .insurance-container { max-width: 1200px; margin: 30px auto; padding: 20px; }
+        .scheme-category { margin-bottom: 40px; }
+        .scheme-category h2 { border-bottom: 2px solid #0a7c2f; padding-bottom: 10px; margin-bottom: 20px; }
+        .insurance-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .insurance-card { background: #fff; border: 1px solid #eee; border-radius: 8px; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; }
+        .insurance-card:hover { transform: translateY(-5px); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .scheme-icon { width: 40px; height: 40px; object-fit: contain; }
+        .card-header { display: flex; align-items: flex-start; gap: 15px; margin-bottom: 10px; }
+        .scheme-icon { font-size: 2rem; line-height: 1; }
+        .insurance-card h3 { color: #0a7c2f; margin-bottom: 10px; }
+        .insurance-card .provider { font-weight: bold; margin-bottom: 15px; }
+        .insurance-card ul { list-style: none; margin-bottom: 20px; padding-left: 0; }
+        .insurance-card li { margin-bottom: 8px; }
+        .insurance-card .btn-apply { display: block; text-align: center; background: #0a7c2f; color: white; padding: 10px; border-radius: 5px; text-decoration: none; margin-top: auto; }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="logo">
+                <img src="assets/logo.png" alt="Logo">
+                <span>Farm Fresh Direct - Farmer Portal</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="/farmer.html" data-i18n="my_products">My Products</a></li>
+                <li><a href="/farmer-orders.html" data-i18n="orders">Orders</a></li>
+                <li><a href="/soil-info.html" data-i18n="soil_info">Soil Info</a></li>
+                <li><a href="/farmer-qna.html" data-i18n="qna">Q&A</a></li>
+                <li><a href="/crop-insurance.html" data-i18n="schemes_insurance">Schemes & Insurance</a></li>
+                <li><a href="/farmer-profile.html" data-i18n="profile">Profile</a></li>
+            </ul>
+            <div class="nav-actions">
+                <div class="lang-switcher-container">
+                    <select id="language-switcher">
+                        <option value="en">English</option>
+                        <option value="hi">हिन्दी</option>
+                        <option value="ta">தமிழ்</option>
+                    </select>
+                </div>
+                <a href="/index.html" class="btn-login" id="logout-btn" data-i18n="logout">Logout</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="farmer-container">
+        <h1 data-i18n="schemes_insurance_title">Government Schemes & Insurance</h1>
+        <p data-i18n="schemes_insurance_desc">Explore programs designed to protect your crops and support your livelihood.</p>
+
+        <section class="scheme-category">
+            <h2>Crop & Weather Insurance</h2>
+            <div class="insurance-grid">
+                <div class="insurance-card">
+                    <div class="card-header">
+                        <img src="/assets/icons/schemes/pmfby-icon.png" alt="PMFBY Icon" class="scheme-icon">
+                        <h3>PMFBY - Pradhan Mantri Fasal Bima Yojana</h3>
+                    </div>
+                    <p class="provider">Provider: Government of India</p>
+                    <ul>
+                        <li><strong>Coverage:</strong> Yield loss due to non-preventable risks (drought, flood, pests).</li>
+                        <li><strong>Premium:</strong> 2% for Kharif, 1.5% for Rabi, 5% for commercial crops.</li>
+                    </ul>
+                    <a href="https://pmfby.gov.in/" target="_blank" rel="noopener noreferrer" class="btn-apply">Learn More & Apply</a>
+                </div>
+                <div class="insurance-card">
+                    <div class="card-header">
+                        <img src="/assets/icons/schemes/wbcis-icon.png" alt="WBCIS Icon" class="scheme-icon">
+                        <h3>Weather Based Crop Insurance Scheme (WBCIS)</h3>
+                    </div>
+                    <p class="provider">Provider: Various Public/Private Insurers</p>
+                    <ul>
+                        <li><strong>Coverage:</strong> Losses due to adverse weather like rainfall deficit, temperature fluctuations.</li>
+                        <li><strong>Premium:</strong> Varies by crop and location.</li>
+                    </ul>
+                    <a href="https://agri-insurance.gov.in/wbcis.aspx" target="_blank" rel="noopener noreferrer" class="btn-apply">Learn More & Apply</a>
+                </div>
+                <div class="insurance-card">
+                    <div class="card-header">
+                        <img src="/assets/icons/schemes/cpis-icon.png" alt="CPIS Icon" class="scheme-icon">
+                        <h3>Coconut Palm Insurance Scheme (CPIS)</h3>
+                    </div>
+                    <p class="provider">Provider: Coconut Development Board</p>
+                    <ul>
+                        <li><strong>Coverage:</strong> Provides insurance for coconut palms against risks like pests, diseases, and natural disasters.</li>
+                        <li><strong>Premium:</strong> Subsidized premium shared between the Board, State Govt, and farmer.</li>
+                    </ul>
+                    <a href="https://coconutboard.gov.in/cpis.aspx" target="_blank" rel="noopener noreferrer" class="btn-apply">Learn More</a>
+                </div>
+            </div>
+        </section>
+        <section class="scheme-category">
+            <h2>Income & Development Support</h2>
+            <div class="insurance-grid">
+                <div class="insurance-card">
+                    <div class="card-header"><img src="/assets/icons/schemes/pmkisan-icon.png" alt="PM-KISAN Icon" class="scheme-icon"><h3>PM-KISAN Scheme</h3></div>
+                    <p class="provider">Provider: Government of India</p>
+                    <ul><li><strong>Benefit:</strong> Income support of ₹6,000 per year in three equal installments.</li><li><strong>Eligibility:</strong> All landholding farmer families.</li></ul>
+                    <a href="https://pmkisan.gov.in/" target="_blank" rel="noopener noreferrer" class="btn-apply">Check Eligibility & Status</a>
+                </div>
+                <div class="insurance-card">
+                    <div class="card-header"><img src="/assets/icons/schemes/pkvy-icon.png" alt="PKVY Icon" class="scheme-icon"><h3>Paramparagat Krishi Vikas Yojana (PKVY)</h3></div>
+                    <p class="provider">Provider: Government of India</p>
+                    <ul><li><strong>Objective:</strong> To promote organic farming and improve soil health.</li><li><strong>Benefit:</strong> Financial assistance for cluster formation and certification.</li></ul>
+                    <a href="https://pgsindia-ncof.gov.in/pkvy/index.aspx" target="_blank" rel="noopener noreferrer" class="btn-apply">Learn More</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            document.getElementById('logout-btn').addEventListener('click', (e) => {
+                e.preventDefault();
+                localStorage.clear();
+                window.location.href = '/index.html';
+            });
+
+            // --- I18n Logic ---
+            const languageSwitcher = document.getElementById('language-switcher');
+            let translations = {};
+
+            async function setLanguage(lang) {
+                localStorage.setItem('language', lang);
+                languageSwitcher.value = lang;
+                
+                const response = await fetch(`/locales/${lang}.json`);
+                translations = await response.json();
+
+                document.querySelectorAll('[data-i18n]').forEach(elem => {
+                    const key = elem.getAttribute('data-i18n');
+                    if (translations[key]) {
+                        elem.textContent = translations[key];
+                    }
+                });
+            }
+
+            languageSwitcher.addEventListener('change', (e) => {
+                setLanguage(e.target.value);
+            });
+
+            // Set initial language
+            const savedLang = localStorage.getItem('language') || 'en';
+            await setLanguage(savedLang);
+        });
+    </script>
+</body>
+</html>

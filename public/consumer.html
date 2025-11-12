@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Consumer Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <link rel="stylesheet" href="style.css"> <!-- Reusing the main stylesheet -->
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <nav class="navbar">
+      <div class="logo">
+        <img src="assets/logo.png" alt="Logo">
+        <span>Farm Fresh Direct</span>
+      </div>
+      <ul class="nav-links">
+        <li><a href="#">Dashboard</a></li>
+        <li><a href="/orders.html" class="nav-link">My Orders</a></li>
+        <li><a href="/qna.html">Q&A</a></li>
+        <li><a href="/profile.html">Profile</a></li>
+      </ul>
+      <div class="nav-actions">
+        <a href="/cart.html" class="cart-icon">
+          🛒 <span id="cart-count-badge" class="cart-badge">0</span>
+        </a>
+        <a href="/index.html" class="btn-login" id="logout-btn">Logout</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="dashboard-hero">
+      <h1>Welcome, Consumer!</h1>
+      <p>Discover the freshest produce directly from our trusted farmers.</p>
+    </section>
+
+    <!-- Product Catalog Section -->
+    <section class="product-catalog" id="product-catalog">
+      <div class="catalog-header">
+        <input type="text" id="search-bar" placeholder="Search for products...">
+        <div class="sort-container">
+          <select id="sort-dropdown">
+            <option value="default">Sort By</option>
+            <option value="price-asc">Price: Low to High</option>
+            <option value="price-desc">Price: High to Low</option>
+            <option value="name-asc">Name: A-Z</option>
+            <option value="name-desc">Name: Z-A</option>
+          </select>
+        </div>
+      </div>
+      <h2>Product Catalog</h2>
+      <div class="product-grid" id="product-grid">
+        <div class="spinner-container"><div class="spinner"></div></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-container">
+      <div>
+        <h3>Farm Fresh Direct</h3>
+        <p>Connecting farmers directly with consumers for fresh, quality produce.</p>
+      </div>
+      <div>
+        <h3>Quick Links</h3>
+        <ul>
+          <li><a href="#">Terms of Service</a></li>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Contact Support</a></li>
+        </ul>
+      </div>
+    </div>
+    <p class="footer-bottom">© 2025 Farm Fresh Direct. All rights reserved.</p>
+  </footer>
+
+  <!-- Scripts for fetching and displaying products -->
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const searchBar = document.getElementById('search-bar');
+      const productGrid = document.getElementById('product-grid');
+      const sortDropdown = document.getElementById('sort-dropdown');
+      const cartCountBadge = document.getElementById('cart-count-badge');
+      const logoutBtn = document.getElementById('logout-btn');
+      
+      let cart = JSON.parse(localStorage.getItem('cart')) || {};
+      let allProducts = [];
+
+      // --- Initial Setup ---
+      try {
+        const response = await fetch('/api/products');
+        allProducts = await response.json(); // Store the master list
+        updateDisplayedProducts(); // Initial render
+        updateCartCount();
+      } catch (error) {
+        console.error('Failed to fetch products:', error);
+        productGrid.innerHTML = '<p>Could not load products. Please try again later.</p>';
+      }
+
+      // --- Event Listeners ---
+      searchBar.addEventListener('input', (e) => {
+        updateDisplayedProducts();
+      });
+
+      sortDropdown.addEventListener('change', () => {
+        updateDisplayedProducts();
+      });
+
+      productGrid.addEventListener('click', (e) => {
+        if (e.target.classList.contains('add-to-cart-btn')) {
+          const productId = e.target.dataset.productId;
+          animateButton(e.target);
+          addToCart(productId);
+        }
+      });
+
+      logoutBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        localStorage.clear();
+        window.location.href = '/index.html';
+      });
+      // --- Functions ---
+      function updateDisplayedProducts() {
+        let productsToDisplay = [...allProducts];
+        const searchTerm = searchBar.value.toLowerCase();
+        const sortValue = sortDropdown.value;
+
+        // Apply Search Filter
+        if (searchTerm) {
+          productsToDisplay = productsToDisplay.filter(p => p.name.toLowerCase().includes(searchTerm));
+        }
+
+        // Apply Sorting
+        if (sortValue === 'price-asc') productsToDisplay.sort((a, b) => a.price - b.price);
+        if (sortValue === 'price-desc') productsToDisplay.sort((a, b) => b.price - a.price);
+        if (sortValue === 'name-asc') productsToDisplay.sort((a, b) => a.name.localeCompare(b.name));
+        if (sortValue === 'name-desc') productsToDisplay.sort((a, b) => b.name.localeCompare(a.name));
+
+        renderProducts(productsToDisplay);
+      }
+
+      function renderProducts(productsToRender) {
+        productGrid.innerHTML = ''; // Clear existing products
+        productsToRender.forEach(product => { 
+          const farmer = product.farmer;
+          const farmerDisplayName = farmer ? (farmer.name || farmer.username) : 'Unknown Farmer';
+          const productCard = document.createElement('div');
+          productCard.className = 'product-card';
+          productCard.innerHTML = `
+          <img src="${product.image}" alt="${product.name}">
+          <h3>${product.name}</h3>
+          <p class="price">₹${product.price.toFixed(2)} / kg</p>
+          <p class="farmer-name">Sold by: <a href="/farmer-details.html?id=${farmer._id}">${farmerDisplayName}</a> ${farmer.isVerified ? '<i class="fas fa-check-circle" style="color: #0a7c2f;" title="Verified Farmer"></i>' : ''}</p>
+          <button class="btn-primary add-to-cart-btn" data-product-id="${product._id}">Add to Cart</button>
+        `;
+        productGrid.appendChild(productCard);
+      });
+      }
+
+      async function addToCart(productId) {
+        const userId = localStorage.getItem('userId');
+        if (!userId) return alert('Please log in to add items to your cart.');
+
+        try {
+          const response = await fetch('/api/cart/add', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId, productId, quantity: 1 })
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+            localStorage.setItem('cart', JSON.stringify(data.cart)); // Update local cart from server response
+            cart = data.cart;
+            updateCartCount();
+          } else {
+            alert('Error: ' + data.msg);
+          }
+        } catch (error) {
+          console.error('Add to cart error:', error);
+        }
+      }
+
+      function updateCartCount() {
+        const count = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
+        cartCountBadge.textContent = count;
+      }
+
+      function animateButton(button) {
+        button.classList.add('added');
+        button.textContent = 'Added!';
+        setTimeout(() => {
+          button.classList.remove('added');
+          button.textContent = 'Add to Cart';
+        }, 1000);
+      }
+    });
+  </script>
+</body>
+</html>

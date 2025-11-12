@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        .lang-switcher-container { margin-left: 20px; }
+        .lang-switcher-container select { padding: 5px; border-radius: 4px; border: 1px solid #ccc; }
+        .nav-actions { display: flex; align-items: center; }
+    </style>
+    <meta charset="UTF-8">
+    <title>My Orders - Farmer</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .orders-container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+        .order-card { background: #fff; border: 1px solid #eee; border-radius: 8px; margin-bottom: 20px; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .order-header { display: flex; justify-content: space-between; border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 10px; }
+        .order-item { display: flex; align-items: center; margin-top: 10px; padding: 5px; background: #f9f9f9; border-radius: 4px; }
+        .order-item img { width: 50px; height: 50px; object-fit: cover; border-radius: 4px; margin-right: 15px; }
+        .status-select { padding: 5px; border-radius: 4px; border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="logo">
+                <img src="assets/logo.png" alt="Logo">
+                <span>Farm Fresh Direct - Farmer Portal</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="/farmer.html" data-i18n="my_products">My Products</a></li>
+                <li><a href="/farmer-orders.html" data-i18n="orders">Orders</a></li>
+                <li><a href="/soil-info.html" data-i18n="soil_info">Soil Info</a></li>
+                <li><a href="/farmer-qna.html" data-i18n="qna">Q&A</a></li>
+                <li><a href="/crop-insurance.html" data-i18n="schemes_insurance">Schemes & Insurance</a></li>
+                <li><a href="/farmer-profile.html" data-i18n="profile">Profile</a></li>
+            </ul>
+            <div class="nav-actions">
+                <div class="lang-switcher-container">
+                    <select id="language-switcher">
+                        <option value="en">English</option>
+                        <option value="hi">हिन्दी</option>
+                        <option value="ta">தமிழ்</option>
+                    </select>
+                </div>
+                <a href="/index.html" class="btn-login" id="logout-btn" data-i18n="logout">Logout</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="farmer-container">
+        <h2 data-i18n="incoming_orders">Incoming Orders</h2>
+        <div id="orders-list">
+            <div class="spinner-container"><div class="spinner"></div></div>
+        </div>
+    </main>
+
+    <script>
+        document.getElementById('logout-btn').addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.clear();
+            window.location.href = '/index.html';
+        });
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const ordersList = document.getElementById('orders-list');
+            const farmerId = localStorage.getItem('userId');
+
+            if (!farmerId || localStorage.getItem('userRole') !== 'farmer') {
+                window.location.href = '/index.html';
+                return;
+            }
+
+            ordersList.addEventListener('change', async (e) => {
+                if (e.target.classList.contains('status-select')) {
+                    const orderId = e.target.dataset.orderId;
+                    const newStatus = e.target.value;
+                    updateOrderStatus(orderId, newStatus);
+                }
+            });
+
+            try {
+                const response = await fetch(`/api/orders/farmer/${farmerId}`);
+                const orders = await response.json();
+
+                if (orders.length === 0) {
+                    ordersList.innerHTML = ''; // Clear spinner
+                    ordersList.innerHTML = `<p data-i18n="no_incoming_orders">${await translate('no_incoming_orders')}</p>`;
+                    return;
+                }
+
+                ordersList.innerHTML = ''; // Clear loading message
+                orders.forEach(order => {
+                    const orderDate = new Date(order.createdAt);
+                    const consumerDetails = order.userDetails.length > 0 ? order.userDetails[0] : null;
+                    const consumerDisplayName = consumerDetails ? (consumerDetails.name || consumerDetails.username) : 'N/A';
+
+                    const statusOptions = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
+                    const statusDropdown = `
+                        <select class="status-select" data-order-id="${order._id}">
+                            ${statusOptions.map(s => 
+                                `<option value="${s}" ${order.status === s ? 'selected' : ''}>${s}</option>`
+                            ).join('')}
+                        </select>
+                    `;
+
+                    let itemsHtml = '';
+                    order.items.forEach(item => {
+                        itemsHtml += `
+                            <div class="order-item">
+                                <img src="${item.product.image}" alt="${item.product.name}">
+                                <div>
+                                    <strong>${item.product.name}</strong><br>
+                                    <span>Quantity: ${item.quantity}</span>
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    const orderCard = document.createElement('div');
+                    orderCard.className = 'order-card';
+                    orderCard.innerHTML = `
+                        <div class="order-header">
+                            <div><strong data-i18n="order_id">Order ID:</strong> ${order._id}</div>
+                            <div><strong data-i18n="customer">Customer:</strong> ${consumerDisplayName}</div>
+                            <div><strong data-i18n="date">Date:</strong> ${orderDate.toLocaleDateString()}</div>
+                            <div><strong data-i18n="status">Status:</strong> ${statusDropdown}</div>
+                        </div>
+                        <div>
+                            <h4 data-i18n="items_in_order">Items in this Order:</h4>
+                            ${itemsHtml}
+                        </div>
+                    `;
+                    ordersList.appendChild(orderCard);
+                });
+            } catch (error) {
+                console.error('Failed to fetch orders:', error);
+                ordersList.innerHTML = '<p>Could not load your orders. Please try again later.</p>';
+            }
+
+            async function updateOrderStatus(orderId, status) {
+                try {
+                    const res = await fetch(`/api/orders/status/${orderId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ status })
+                    });
+                    const data = await res.json();
+                    if (!res.ok) {
+                        throw new Error(data.msg || 'Failed to update status');
+                    }
+                    // Optionally show a success message, but the UI is already updated.
+                } catch (error) {
+                    alert(`Error: ${error.message}`);
+                }
+            }
+
+            // --- I18n Logic ---
+            const languageSwitcher = document.getElementById('language-switcher');
+            let translations = {};
+
+            async function setLanguage(lang) {
+                localStorage.setItem('language', lang);
+                languageSwitcher.value = lang;
+                
+                const response = await fetch(`/locales/${lang}.json`);
+                translations = await response.json();
+
+                document.querySelectorAll('[data-i18n]').forEach(elem => {
+                    const key = elem.getAttribute('data-i18n');
+                    if (translations[key]) {
+                        elem.textContent = translations[key];
+                    }
+                });
+            }
+
+            async function translate(key) {
+                if (translations[key]) return translations[key];
+                const response = await fetch(`/locales/en.json`);
+                const enTranslations = await response.json();
+                return enTranslations[key] || key;
+            }
+
+            languageSwitcher.addEventListener('change', (e) => {
+                setLanguage(e.target.value);
+            });
+
+            // Set initial language
+            const savedLang = localStorage.getItem('language') || 'en';
+            await setLanguage(savedLang);
+        });
+    </script>
+</body>
+</html>

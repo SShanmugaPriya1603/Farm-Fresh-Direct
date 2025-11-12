@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Checkout</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="logo">
+                <img src="assets/logo.png" alt="Logo">
+                <a href="/consumer.html" style="text-decoration: none; color: inherit;"><span>Farm Fresh Direct</span></a>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section id="authForm" style="display: block;"> <!-- Reusing authForm styling -->
+            <h2>Checkout</h2>
+            <p>Please confirm your shipping details to place the order.</p>
+            <form id="checkoutForm">
+                <div>
+                    <label for="address">Shipping Address:</label>
+                    <textarea id="address" rows="4" placeholder="Enter your full address" required></textarea>
+                </div>
+                <div class="payment-grid-container">
+                    <label>Payment Method:</label>
+                    <div class="payment-grid">
+                        <div class="payment-option">
+                            <input type="radio" id="cod" name="paymentMethod" value="Cash on Delivery" checked required>
+                            <label for="cod"><span class="payment-icon">💵</span> Cash on Delivery</label>
+                        </div>
+                        <div class="payment-option">
+                            <input type="radio" id="upi" name="paymentMethod" value="UPI">
+                            <label for="upi"><span class="payment-icon">📱</span> UPI</label>
+                        </div>
+                        <div class="payment-option">
+                            <input type="radio" id="card" name="paymentMethod" value="Credit/Debit Card">
+                            <label for="card"><span class="payment-icon">💳</span> Card</label>
+                        </div>
+                        <div class="payment-option">
+                            <input type="radio" id="wallet" name="paymentMethod" value="Digital Wallet">
+                            <label for="wallet"><span class="payment-icon">💰</span> Wallet</label>
+                        </div>
+                        <div class="payment-option">
+                            <input type="radio" id="razorpay" name="paymentMethod" value="Razorpay">
+                            <label for="razorpay"><span class="payment-icon">⚡</span> Razorpay</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dynamic Payment Details Forms -->
+                <div id="payment-details">
+                    <div id="card-details" class="payment-form hidden">
+                        <input type="text" placeholder="Card Number">
+                        <input type="text" placeholder="MM/YY">
+                        <input type="text" placeholder="CVV">
+                    </div>
+                    <div id="upi-details" class="payment-form hidden">
+                        <input type="text" placeholder="Enter UPI ID">
+                    </div>
+                    <div id="wallet-details" class="payment-form hidden">
+                        <p>You will be redirected to your wallet provider to complete the payment.</p>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <a href="/cart.html" class="btn-secondary">Cancel Checkout</a>
+                    <button type="submit" class="btn-primary">Place Order</button>
+                </div>
+            </form>
+        </section>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const checkoutForm = document.getElementById('checkoutForm');
+
+            // --- Payment form toggle logic ---
+            document.querySelectorAll('input[name="paymentMethod"]').forEach(radio => {
+                radio.addEventListener('change', (event) => {
+                    // Hide all payment forms and remove 'required' from their inputs
+                    document.querySelectorAll('.payment-form').forEach(form => form.classList.add('hidden'));
+                    document.querySelectorAll('.payment-form input').forEach(input => input.required = false);
+
+                    const selectedMethod = event.target.value;
+                    let detailsForm;
+
+                    if (selectedMethod === 'Credit/Debit Card') {
+                        detailsForm = document.getElementById('card-details');
+                    } else if (selectedMethod === 'UPI') {
+                        detailsForm = document.getElementById('upi-details');
+                    } else if (selectedMethod === 'Digital Wallet') {
+                        detailsForm = document.getElementById('wallet-details');
+                    }
+
+                    // Show the selected form and make its inputs required
+                    if (detailsForm) {
+                        detailsForm.classList.remove('hidden');
+                        detailsForm.querySelectorAll('input').forEach(input => input.required = true);
+                    }
+                });
+            });
+
+            // --- Form submission logic ---
+            checkoutForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const shippingAddress = document.getElementById('address').value;
+            const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+            const userId = localStorage.getItem('userId');
+
+            if (!userId) {
+                alert('You must be logged in to place an order.');
+                window.location.href = '/index.html';
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/orders', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId, shippingAddress, paymentMethod })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Clear the cart from local storage as it's now empty on the server
+                    localStorage.setItem('cart', JSON.stringify({}));
+                    alert(data.msg);
+                    // Redirect to the new invoice page with the order ID
+                    window.location.href = `/invoice.html?orderId=${data.order._id}`;
+                } else {
+                    alert('Error: ' + data.msg);
+                }
+            } catch (error) {
+                console.error('Order placement error:', error);
+                alert('An error occurred while placing your order. Please try again.');
+            }
+            });
+        });
+    </script>
+</body>
+</html>

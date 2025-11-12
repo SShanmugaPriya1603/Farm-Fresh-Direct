@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Order Invoice</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .invoice-box { max-width: 800px; margin: 30px auto; padding: 30px; border: 1px solid #eee; box-shadow: 0 0 10px rgba(0, 0, 0, .15); font-size: 16px; line-height: 24px; }
+        .invoice-header { display: flex; justify-content: space-between; margin-bottom: 20px; }
+        .invoice-details table { width: 100%; line-height: inherit; text-align: left; }
+        .invoice-details table td { padding: 5px; vertical-align: top; }
+        .invoice-details table tr.heading td { background: #eee; border-bottom: 1px solid #ddd; font-weight: bold; }
+        .invoice-details table tr.item td { border-bottom: 1px solid #eee; }
+        .invoice-details table tr.total td:last-child { border-top: 2px solid #eee; font-weight: bold; }
+        .print-btn { display: block; width: 100px; margin: 20px auto; text-align: center; padding: 10px; background: #0a7c2f; color: white; text-decoration: none; border-radius: 5px; }
+        @media print {
+            body, .invoice-box { border: 0; box-shadow: none; margin: 0; padding: 0; }
+            .print-btn, header { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="logo">
+                <a href="/consumer.html" style="text-decoration: none; color: inherit;"><span>Farm Fresh Direct</span></a>
+            </div>
+            <ul class="nav-links">
+                <li><a href="/consumer.html">Dashboard</a></li>
+                <li><a href="/orders.html">My Orders</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="invoice-box" id="invoice-box">
+        <!-- Invoice content will be loaded here -->
+        <p>Loading invoice...</p>
+    </div>
+    <a href="#" onclick="window.print()" class="print-btn">Print</a>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const invoiceBox = document.getElementById('invoice-box');
+            const params = new URLSearchParams(window.location.search);
+            const orderId = params.get('orderId');
+
+            if (!orderId) {
+                invoiceBox.innerHTML = '<h2>No Order ID provided.</h2>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/orders/details/${orderId}`);
+                if (!response.ok) throw new Error('Order not found');
+                const order = await response.json();
+
+                let itemsHtml = '';
+                order.items.forEach(item => {
+                    itemsHtml += `
+                        <tr class="item">
+                            <td>${item.product.name}</td>
+                            <td>${item.quantity}</td>
+                            <td>₹${item.price.toFixed(2)}</td>
+                            <td>₹${(item.quantity * item.price).toFixed(2)}</td>
+                        </tr>
+                    `;
+                });
+
+                invoiceBox.innerHTML = `
+                    <div class="invoice-header">
+                        <div>
+                            <h2>Invoice</h2>
+                            <strong>Order ID:</strong> ${order._id}<br>
+                            <strong>Created:</strong> ${new Date(order.createdAt).toLocaleDateString()}<br>
+                            <strong>Status:</strong> ${order.status}
+                        </div>
+                        <div>
+                            <strong>Farm Fresh Direct</strong><br>
+                            123 Farm Street<br>
+                            Agriculture Valley, AV 12345
+                        </div>
+                    </div>
+                    <p>
+                        <strong>Bill To:</strong> ${order.user.username}<br>
+                        <strong>Ship To:</strong> ${order.shippingAddress}
+                    </p>
+                    <div class="invoice-details">
+                        <table>
+                            <tr class="heading">
+                                <td>Item</td>
+                                <td>Quantity</td>
+                                <td>Unit Price</td>
+                                <td>Total</td>
+                            </tr>
+                            ${itemsHtml}
+                            <tr class="total">
+                                <td colspan="3"></td>
+                                <td><strong>Grand Total: ₹${order.totalAmount.toFixed(2)}</strong></td>
+                            </tr>
+                        </table>
+                    </div>
+                     <p style="margin-top: 20px;"><strong>Payment Method:</strong> ${order.paymentMethod} (${order.paymentStatus})</p>
+                `;
+            } catch (error) {
+                console.error('Failed to load invoice:', error);
+                invoiceBox.innerHTML = `<h2>Error: ${error.message}</h2>`;
+            }
+        });
+    </script>
+</body>
+</html>

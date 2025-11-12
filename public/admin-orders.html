@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Orders - Admin</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .admin-container { max-width: 1200px; margin: 30px auto; padding: 20px; }
+        .order-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .order-table th, .order-table td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        .order-table th { background-color: #f2f2f2; color: #333; }
+        .order-table tr:nth-child(even) { background-color: #f9f9f9; }
+        .status-Pending { color: #ffc107; font-weight: bold; }
+        .status-Processing { color: #17a2b8; font-weight: bold; }
+        .status-Shipped { color: #007bff; font-weight: bold; }
+        .status-Delivered { color: #28a745; font-weight: bold; }
+        .status-Cancelled { color: #dc3545; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="logo">
+                <img src="assets/logo.png" alt="Logo">
+                <span>Farm Fresh Direct - Admin Portal</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="/admin.html">Dashboard</a></li>
+                <li><a href="/admin-users.html">Users</a></li>
+                <li><a href="/admin-orders.html">Orders</a></li>
+                <li><a href="/admin-analytics.html">Analytics</a></li>
+            </ul>
+            <a href="/index.html" class="btn-login" id="logout-btn">Logout</a>
+        </nav>
+    </header>
+
+    <main class="admin-container">
+        <h2>Platform-Wide Order Management</h2>
+        <table class="order-table">
+            <thead>
+                <tr>
+                    <th>Order ID</th>
+                    <th>Customer</th>
+                    <th>Farmer(s)</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody id="order-list-body">
+                <tr><td colspan="6"><div class="spinner-container"><div class="spinner"></div></div></td></tr>
+            </tbody>
+        </table>
+    </main>
+
+    <script>
+        document.getElementById('logout-btn').addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.clear();
+            window.location.href = '/index.html';
+        });
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const orderListBody = document.getElementById('order-list-body');
+            const token = localStorage.getItem('token');
+
+            if (!token || localStorage.getItem('userRole') !== 'admin') {
+                window.location.href = '/index.html';
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/admin/orders', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch orders or not authorized.');
+                }
+
+                const orders = await response.json();
+                orderListBody.innerHTML = ''; // Clear loading message
+
+                if (orders.length === 0) {
+                    orderListBody.innerHTML = `<tr><td colspan="6">No orders found on the platform.</td></tr>`;
+                    return;
+                }
+
+                orders.forEach(order => {
+                    const customerName = order.user ? (order.user.name || order.user.username) : 'N/A';
+                    
+                    // Get unique farmer names from the order items
+                    const farmerNames = [...new Set(order.items.map(item => 
+                        item.product && item.product.farmer ? (item.product.farmer.name || item.product.farmer.username) : 'Unknown'
+                    ))].join(', ');
+
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td data-label="Order ID">${order._id}</td>
+                        <td data-label="Customer">${customerName}</td>
+                        <td data-label="Farmer(s)">${farmerNames}</td>
+                        <td data-label="Total">₹${order.totalAmount.toFixed(2)}</td>
+                        <td data-label="Status"><span class="status-${order.status}">${order.status}</span></td>
+                        <td data-label="Date">${new Date(order.createdAt).toLocaleDateString()}</td>
+                    `;
+                    orderListBody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Error:', error);
+                orderListBody.innerHTML = `<tr><td colspan="6" style="color: red;">${error.message}</td></tr>`;
+            }
+        });
+    </script>
+</body>
+</html>

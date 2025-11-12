@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Farm Fresh Direct</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <nav class="navbar">
+      <div class="logo">
+        <img src="assets/logo.png" alt="Logo">
+        <span>Connect to Farmers</span>
+      </div>
+      <ul class="nav-links">
+        <li><a href="#">Home</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#contact">Contact Us</a></li>
+      </ul>
+      <!-- Point the login button to the role selection section -->
+      <a href="#roles" class="btn-login">Login</a>
+    </nav>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <h1>Connect to Farmers</h1>
+    <p>Connecting farmers directly with consumers for fresh, quality produce</p>
+    <div class="hero-buttons">
+      <a href="#roles" class="btn-primary">Get Started</a>
+      <a href="#" class="btn-secondary">Learn More</a>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="features" id="features">
+    <div class="feature">
+      <img src="assets/icons/features/fresh-icon.png" alt="Fresh from Farm">
+      <h3>Fresh from Farm</h3>
+    </div>
+    <div class="feature">
+      <img src="assets/icons/features/delivery-icon.png" alt="Fast Delivery">
+      <h3>Fast Delivery</h3>
+    </div>
+    <div class="feature">
+      <img src="assets/icons/features/price-icon.png" alt="Fair Prices">
+      <h3>Fair Prices</h3>
+    </div>
+  </section>
+
+  <!-- About Us Section -->
+  <section class="about-section" id="about">
+    <div class="about-content">
+      <h2>Our Mission</h2>
+      <p>Our mission is to bridge the gap between rural farmers and urban consumers. We empower farmers by providing them with a digital platform to sell their produce at fair prices, while ensuring consumers receive the freshest, highest-quality goods directly from the source. We believe in a future where technology fosters a sustainable and transparent food ecosystem for everyone.</p>
+    </div>
+    <div class="about-image">
+      <img src="assets/logo.png" alt="Our Mission">
+    </div>
+  </section>
+
+  <!-- Role Selection -->
+  <section class="roles" id="roles">
+    <h2>Choose Your Role</h2>
+    <p>Select how you'd like to access the platform</p>
+    <div class="role-cards">
+      <div class="card consumer">
+        <img src="assets/consumer.png" alt="Consumer">
+        <h3>Consumer</h3>
+        <p>Browse and purchase fresh produce from local farmers</p>
+        <ul>
+          <li>Browse product catalog</li>
+          <li>Chat with AI assistant</li>
+          <li>Track deliveries</li>
+          <li>Leave feedback</li>
+        </ul>
+        <!-- ✅ Call JS function -->
+        <button onclick="showAuthForm('consumer')" class="btn-consumer">Login as Consumer</button>
+      </div>
+      <div class="card farmer">
+        <img src="assets/farmer.png" alt="Farmer">
+        <h3>Farmer</h3>
+        <p>Sell your fresh produce directly to consumers</p>
+        <ul>
+          <li>Manage soil information</li>
+          <li>List crop details</li>
+          <li>Sell products online</li>
+          <li>Multi-language support</li>
+        </ul>
+        <!-- ✅ Call JS function -->
+        <button onclick="showAuthForm('farmer')" class="btn-farmer">Login as Farmer</button>
+      </div>
+      <div class="card admin">
+        <img src="assets/admin.png" alt="Admin">
+        <h3>Admin</h3>
+        <p>Manage the platform and monitor operations</p>
+        <ul>
+          <li>View analytics dashboard</li>
+          <li>Monitor deliveries</li>
+          <li>Manage trust verification</li>
+          <li>Platform oversight</li>
+        </ul>
+        <!-- ✅ Call JS function -->
+        <button onclick="showAuthForm('admin')" class="btn-admin">Login as Admin</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ✅ Hidden Auth Form (appears after role click) -->
+  <section id="authForm" class="hidden">
+    <h2 id="formTitle">Login</h2>
+    <div id="formMessage" class="hidden"></div> <!-- Message container -->
+    <form id="loginForm">
+      <input type="text" id="username" placeholder="Username" required>
+      <input type="password" id="password" placeholder="Password" required>
+      <div id="aadharFieldContainer" class="hidden">
+        <input type="password" id="aadharInput" placeholder="Aadhaar Number (Farmers Only)" autocomplete="off">
+      </div>
+      <button type="submit">Login</button>
+    </form>
+    <p>Don’t have an account? <a href="#" onclick="toggleRegister()">Register here</a></p>
+  </section>
+
+  <!-- Testimonials Section -->
+  <section class="testimonials-section">
+    <h2>What People Are Saying</h2>
+    <div class="testimonial-cards">
+      <div class="testimonial-card">
+        <p>"This platform has transformed my business. I can now reach customers directly and get a much better price for my crops. The process is simple and transparent."</p>
+        <h4>- Rajesh Kumar, Farmer</h4>
+      </div>
+      <div class="testimonial-card">
+        <p>"The quality of the produce is amazing! It's so much fresher than what I find at the supermarket. I love knowing I'm supporting local farmers directly."</p>
+        <h4>- Priya Sharma, Consumer</h4>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer id="contact">
+    <div class="footer-container">
+      <div>
+        <h3>Farm Fresh Direct</h3>
+        <p>Connecting farmers directly with consumers for fresh, quality produce.</p>
+      </div>
+      <div>
+        <h3>Quick Links</h3>
+        <ul>
+          <li><a href="#">Terms of Service</a></li>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Contact Support</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Contact Info</h3>
+        <p><i class="fas fa-phone"></i> +91 98765 43210</p>
+        <p><i class="fas fa-envelope"></i> support@farmfreshdirect.com</p>
+        <p><i class="fas fa-map-marker-alt"></i> 123 Green Valley, Nashik, Maharashtra, 422001</p>
+      </div>
+      <div>
+        <h3>Follow Us</h3>
+        <div class="social-icons">
+          <a href="#"><i class="fab fa-facebook-f"></i></a>
+          <a href="#"><i class="fab fa-twitter"></i></a>
+          <a href="#"><i class="fab fa-instagram"></i></a>
+        </div>
+      </div>
+    </div>
+    <p class="footer-bottom">© 2025 Farm Fresh Direct. All rights reserved.</p>
+  </footer>
+
+  <!-- Back to Top Button -->
+  <button id="back-to-top-btn" title="Go to top"><i class="fas fa-arrow-up"></i></button>
+
+  <!-- ✅ Script -->
+  <script src="script.js"></script>
+  <script>
+    const backToTopButton = document.getElementById("back-to-top-btn");
+    window.onscroll = () => { backToTopButton.style.display = (document.body.scrollTop > 100 || document.documentElement.scrollTop > 100) ? "block" : "none"; };
+    backToTopButton.onclick = () => { window.scrollTo({ top: 0, behavior: 'smooth' }); };
+  </script>
+</body>
+</html>

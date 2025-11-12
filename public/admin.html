@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .admin-container { max-width: 1200px; margin: 30px auto; padding: 20px; }
+        .dashboard-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 20px; }
+        .dashboard-card { background: #fff; border: 1px solid #eee; border-radius: 8px; padding: 20px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: transform 0.2s; }
+        .dashboard-card:hover { transform: translateY(-5px); }
+        .dashboard-card a { text-decoration: none; color: inherit; }
+        .dashboard-card .icon { font-size: 3rem; color: #0a7c2f; margin-bottom: 10px; }
+        .dashboard-card h3 { margin-bottom: 5px; }
+        .dashboard-card p { font-size: 0.9em; color: #777; }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="logo">
+                <img src="assets/logo.png" alt="Logo">
+                <span>Farm Fresh Direct - Admin Portal</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="/admin.html">Dashboard</a></li>
+                <li><a href="/admin-users.html">Users</a></li>
+                <li><a href="/admin-orders.html">Orders</a></li>
+                <li><a href="/admin-analytics.html">Analytics</a></li>
+            </ul>
+            <a href="/index.html" class="btn-login" id="logout-btn">Logout</a>
+        </nav>
+    </header>
+
+    <main class="admin-container">
+        <h2>Admin Dashboard</h2>
+        <div class="dashboard-cards">
+            <div class="dashboard-card">
+                <a href="/admin-users.html">
+                    <div class="icon"><i class="fas fa-users"></i></div>
+                    <h3>Manage Users</h3>
+                    <p>View and manage all registered consumers and farmers.</p>
+                </a>
+            </div>
+            <div class="dashboard-card">
+                <a href="/admin-orders.html">
+                    <div class="icon"><i class="fas fa-truck"></i></div>
+                    <h3>Manage Orders</h3>
+                    <p>Track and view all orders placed on the platform.</p>
+                </a>
+            </div>
+            <div class="dashboard-card">
+                <a href="/admin-analytics.html">
+                    <div class="icon"><i class="fas fa-chart-line"></i></div>
+                    <h3>View Analytics</h3>
+                    <p>Platform-wide sales and user registration trends.</p>
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.getElementById('logout-btn').addEventListener('click', (e) => { e.preventDefault(); localStorage.clear(); window.location.href = '/index.html'; });
+    </script>
+</body>
+</html>

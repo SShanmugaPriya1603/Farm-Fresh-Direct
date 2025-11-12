@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Q&A</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .qna-container { max-width: 800px; margin: 30px auto; padding: 20px; }
+        .faq-section h3 { margin-bottom: 15px; color: #0a7c2f; }
+        .faq-question { background: #f9f9f9; padding: 10px; border: 1px solid #eee; border-radius: 5px; margin-bottom: 10px; cursor: pointer; }
+        .faq-question:hover { background: #f0f0f0; }
+        .ai-section { margin-top: 40px; }
+        #qna-form { display: flex; gap: 10px; }
+        #question-input { flex-grow: 1; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
+        #ai-answer { margin-top: 20px; padding: 15px; background: #eef7ee; border-left: 4px solid #0a7c2f; min-height: 50px; }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="logo">
+                <img src="assets/logo.png" alt="Logo">
+                <a href="/consumer.html" style="text-decoration: none; color: inherit;"><span>Farm Fresh Direct</span></a>
+            </div>
+            <ul class="nav-links">
+                <li><a href="/consumer.html">Dashboard</a></li>
+                <li><a href="/orders.html">My Orders</a></li>
+                <li><a href="/feedback.html">Feedback</a></li>
+                <li><a href="/qna.html">Q&A</a></li>
+            </ul>
+            <a href="/index.html" class="btn-login" id="logout-btn">Logout</a>
+        </nav>
+    </header>
+
+    <main class="qna-container">
+        <h2>Questions & Answers</h2>
+        <p>Get instant answers to your questions from our AI assistant.</p>
+
+        <section class="faq-section">
+            <h3>Frequently Asked Questions</h3>
+            <div id="faq-list">
+                <div class="faq-question" data-question="How long does delivery take?">How long does delivery take?</div>
+                <div class="faq-question" data-question="What are the delivery charges?">What are the delivery charges?</div>
+                <div class="faq-question" data-question="How do I return an item?">How do I return an item?</div>
+                <div class="faq-question" data-question="Are the products organic?">Are the products organic?</div>
+            </div>
+        </section>
+
+        <section class="ai-section">
+            <h3>Ask our AI Assistant</h3>
+            <form id="qna-form">
+                <input type="text" id="question-input" placeholder="Type your question here..." required>
+                <button type="submit" class="btn-primary">Ask</button>
+            </form>
+            <div id="ai-answer">
+                <p>Your answer will appear here.</p>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        document.getElementById('logout-btn').addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.clear();
+            window.location.href = '/index.html';
+        });
+
+        const qnaForm = document.getElementById('qna-form');
+        const questionInput = document.getElementById('question-input');
+        const aiAnswerBox = document.getElementById('ai-answer');
+        const faqList = document.getElementById('faq-list');
+
+        qnaForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const question = questionInput.value;
+            displayAnswer(question);
+        });
+
+        faqList.addEventListener('click', (e) => {
+            if (e.target.classList.contains('faq-question')) {
+                const question = e.target.dataset.question;
+                questionInput.value = question;
+                displayAnswer(question);
+            }
+        });
+
+        function displayAnswer(question) {
+            const answer = getAIResponse(question.toLowerCase());
+            aiAnswerBox.innerHTML = `<p>${answer}</p>`;
+        }
+
+        function getAIResponse(question) {
+            if (question.includes('delivery') && (question.includes('time') || question.includes('long'))) {
+                return "Deliveries are typically made within 24-48 hours of placing an order, depending on your location and the farmer's availability.";
+            } else if (question.includes('delivery') && question.includes('charge')) {
+                return "Delivery charges are a flat rate of ₹50 for all orders under ₹500. Orders above ₹500 have free delivery!";
+            } else if (question.includes('return') || question.includes('refund')) {
+                return "We have a 'no questions asked' return policy for fresh produce if you report the issue within 6 hours of delivery. Please contact support through the 'My Orders' page to initiate a return.";
+            } else if (question.includes('organic')) {
+                return "Many of our farmers practice organic farming. You can look for an 'Organic' badge on the product listing. We are working on a dedicated filter for organic products.";
+            } else {
+                return "I'm sorry, I don't have an answer for that right now. Please try rephrasing your question or contact our customer support for more detailed assistance.";
+            }
+        }
+    </script>
+</body>
+</html>

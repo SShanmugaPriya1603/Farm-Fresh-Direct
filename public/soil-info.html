@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        .lang-switcher-container { margin-left: 20px; }
+        .lang-switcher-container select { padding: 5px; border-radius: 4px; border: 1px solid #ccc; }
+        .nav-actions { display: flex; align-items: center; }
+    </style>
+    <meta charset="UTF-8">
+    <title>Soil Information</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .soil-container { max-width: 800px; margin: 30px auto; padding: 20px; }
+        #soil-form { display: flex; gap: 10px; margin-bottom: 20px; }
+        #location-input { flex-grow: 1; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
+        .soil-results { background: #f9f9f9; border: 1px solid #eee; border-radius: 8px; padding: 20px; }
+        .soil-results h3 { color: #0a7c2f; margin-bottom: 10px; }
+        .soil-results img { width: 100%; max-width: 200px; border-radius: 4px; margin-bottom: 15px; float: right; margin-left: 20px; }
+        .soil-results p { margin-bottom: 5px; }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="logo">
+                <img src="assets/logo.png" alt="Logo">
+                <span>Farm Fresh Direct - Farmer Portal</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="/farmer.html" data-i18n="my_products">My Products</a></li>
+                <li><a href="/farmer-orders.html" data-i18n="orders">Orders</a></li>
+                <li><a href="/soil-info.html" data-i18n="soil_info">Soil Info</a></li>
+                <li><a href="/farmer-qna.html" data-i18n="qna">Q&A</a></li>
+                <li><a href="/crop-insurance.html" data-i18n="schemes_insurance">Schemes & Insurance</a></li>
+                <li><a href="/farmer-profile.html" data-i18n="profile">Profile</a></li>
+            </ul>
+            <div class="nav-actions">
+                <div class="lang-switcher-container">
+                    <select id="language-switcher">
+                        <option value="en">English</option>
+                        <option value="hi">हिन्दी</option>
+                        <option value="ta">தமிழ்</option>
+                    </select>
+                </div>
+                <a href="/index.html" class="btn-login" id="logout-btn" data-i18n="logout">Logout</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="farmer-container">
+        <h2 data-i18n="soil_info_lookup">Soil Information Lookup</h2>
+        <p data-i18n="soil_info_desc">Enter a location to get soil composition and suitable crop information.</p>
+
+        <form id="soil-form">
+            <input type="text" id="location-input" placeholder="Enter city or district (e.g., Pune, Nashik)" required>
+            <button type="submit" class="btn-primary" data-i18n="search">Search</button>
+        </form>
+
+        <div id="soil-results" class="soil-results hidden">
+            <!-- Results will be displayed here -->
+        </div>
+    </main>
+
+    <script>
+        document.getElementById('logout-btn').addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.clear();
+            window.location.href = '/index.html';
+        });
+
+        document.addEventListener('DOMContentLoaded', async () => {const soilForm = document.getElementById('soil-form');
+        const locationInput = document.getElementById('location-input');
+        const resultsContainer = document.getElementById('soil-results');
+
+        soilForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const location = locationInput.value.trim();
+            const soilData = getMockSoilData(location);
+            displaySoilData(soilData, location);
+        });
+
+        function displaySoilData(data, location) {
+            resultsContainer.classList.remove('hidden');
+            if (data) {
+                resultsContainer.innerHTML = `
+                    <img src="${data.image}" alt="Soil from ${location}">
+                    <h3>Soil Profile for ${location}</h3>
+                    <p><strong>Soil Type:</strong> ${data.soilType}</p>
+                    <p><strong>pH Level:</strong> ${data.phLevel}</p>
+                    <p><strong>Organic Matter:</strong> ${data.organicMatter}</p>
+                    <p><strong>Key Nutrients:</strong> ${data.nutrients.join(', ')}</p>
+                    <hr style="margin: 15px 0;">
+                    <h4>Suitable Crops:</h4>
+                    <p>${data.suitableCrops.join(', ')}</p>
+                    <hr style="margin: 15px 0;">
+                    <p style="font-size: 0.9em; color: #555; clear: both;">
+                        <strong>Source:</strong> Information is compiled from public agricultural data. For more details, visit:
+                        <a href="https://www.nabard.org/" target="_blank" rel="noopener noreferrer">NABARD</a> | 
+                        <a href="https://icar.gov.in/" target="_blank" rel="noopener noreferrer">ICAR</a>
+                    </p>
+                `;
+            } else {
+                resultsContainer.innerHTML = `
+                    <h3>No Data Found</h3>
+                    <p>Sorry, we do not have soil information for "${location}" at the moment. Please try another nearby location.</p>
+                `;
+            }
+        }
+
+        // --- Mock API Service ---
+        function getMockSoilData(location) {
+            const db = {
+                'pune': {
+                    soilType: 'Black Clay Loam (Vertisols)',
+                    image: '/assets/soil/pune-soil.jpg',
+                    phLevel: '7.2 - 8.5 (Slightly Alkaline)',
+                    organicMatter: '0.8% - 1.2% (Medium)',
+                    nutrients: ['Potassium', 'Lime', 'Magnesia'],
+                    suitableCrops: ['Sugarcane', 'Jowar', 'Bajra', 'Onions', 'Grapes']
+                },
+                'nashik': {
+                    soilType: 'Red to Brownish Soil (Alfisols)',
+                    image: '/assets/soil/nashik-soil.jpg',
+                    phLevel: '6.5 - 7.5 (Neutral)',
+                    organicMatter: '0.5% - 1.0% (Low to Medium)',
+                    nutrients: ['Iron', 'Potash'],
+                    suitableCrops: ['Grapes', 'Onions', 'Tomatoes', 'Pomegranate', 'Millets']
+                },
+                'satara': {
+                    soilType: 'Lateritic Soil',
+                    image: '/assets/soil/satara-soil.jpg',
+                    phLevel: '5.5 - 6.5 (Slightly Acidic)',
+                    organicMatter: '1.0% - 1.5% (Medium)',
+                    nutrients: ['Iron Oxide', 'Aluminum'],
+                    suitableCrops: ['Rice', 'Turmeric', 'Ginger', 'Strawberries', 'Soybean']
+                }
+            };
+            return db[location.toLowerCase()] || null;
+        }        // --- I18n Logic ---
+            const languageSwitcher = document.getElementById('language-switcher');
+            let translations = {};
+
+            async function setLanguage(lang) {
+                localStorage.setItem('language', lang);
+                languageSwitcher.value = lang;
+                
+                const response = await fetch(`/locales/${lang}.json`);
+                translations = await response.json();
+
+                document.querySelectorAll('[data-i18n]').forEach(elem => {
+                    const key = elem.getAttribute('data-i18n');
+                    if (translations[key]) {
+                        elem.textContent = translations[key];
+                    }
+                });
+            }
+
+            async function translate(key) {
+                if (translations[key]) return translations[key];
+                const response = await fetch(`/locales/en.json`);
+                const enTranslations = await response.json();
+                return enTranslations[key] || key;
+            }
+
+            languageSwitcher.addEventListener('change', (e) => {
+                setLanguage(e.target.value);
+            });
+
+            // Set initial language
+            const savedLang = localStorage.getItem('language') || 'en';
+            await setLanguage(savedLang);
+        });
+    </script>
+</body>
+</html>

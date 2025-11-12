@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Profile</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="logo">
+                <img src="assets/logo.png" alt="Logo">
+                <a href="/consumer.html" style="text-decoration: none; color: inherit;"><span>Farm Fresh Direct</span></a>
+            </div>
+            <ul class="nav-links">
+                <li><a href="/consumer.html">Dashboard</a></li>
+                <li><a href="/orders.html">My Orders</a></li>
+                <li><a href="/qna.html">Q&A</a></li>
+                <li><a href="/profile.html">Profile</a></li>
+            </ul>
+            <a href="/index.html" class="btn-login" id="logout-btn">Logout</a>
+        </nav>
+    </header>
+
+    <main>
+        <section id="authForm" style="display: block;"> <!-- Reusing authForm styling -->
+            <h2>My Profile</h2>
+            <form id="profileForm">
+                <div>
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" required>
+                </div>
+                <div>
+                    <label for="name">Full Name:</label>
+                    <input type="text" id="name">
+                </div>
+                <div>
+                    <label for="email">Email:</label>
+                    <input type="email" id="email">
+                </div>
+                <div>
+                    <label for="phone">Phone Number:</label>
+                    <input type="tel" id="phone">
+                </div>
+                <div>
+                    <label for="role">Role:</label>
+                    <input type="text" id="role" disabled>
+                </div>
+                <button type="submit">Update Profile</button>
+            </form>
+
+            <hr style="margin: 30px 0;">
+
+            <h2>Change Password</h2>
+            <form id="passwordForm">
+                <div>
+                    <label for="currentPassword">Current Password:</label>
+                    <input type="password" id="currentPassword" required>
+                </div>
+                <div>
+                    <label for="newPassword">New Password:</label>
+                    <input type="password" id="newPassword" required>
+                </div>
+                <button type="submit">Change Password</button>
+            </form>
+        </section>
+    </main>
+
+    <script>
+        document.getElementById('logout-btn').addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.clear();
+            window.location.href = '/index.html';
+        });
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const usernameInput = document.getElementById('username');
+            const nameInput = document.getElementById('name');
+            const emailInput = document.getElementById('email');
+            const phoneInput = document.getElementById('phone');
+            const roleInput = document.getElementById('role');
+            const profileForm = document.getElementById('profileForm');
+            const passwordForm = document.getElementById('passwordForm');
+            const userId = localStorage.getItem('userId');
+
+            if (!userId) {
+                window.location.href = '/index.html';
+                return;
+            }
+
+            try {
+                const res = await fetch(`/api/users/${userId}`);
+                const user = await res.json();
+
+                if (res.ok) {
+                    usernameInput.value = user.username;
+                    nameInput.value = user.name || '';
+                    emailInput.value = user.email || '';
+                    phoneInput.value = user.phone || '';
+                    roleInput.value = user.role.charAt(0).toUpperCase() + user.role.slice(1);
+                } else {
+                    alert('Could not load profile.');
+                }
+            } catch (error) {
+                console.error('Error fetching profile:', error);
+            }
+
+            profileForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const updatedProfile = {
+                    username: usernameInput.value,
+                    name: nameInput.value,
+                    email: emailInput.value,
+                    phone: phoneInput.value,
+                };
+
+                try {
+                    const res = await fetch(`/api/users/${userId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(updatedProfile)
+                    });
+                    const data = await res.json();
+                    alert(data.msg);
+                } catch (error) {
+                    console.error('Error updating profile:', error);
+                }
+            });
+
+            passwordForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const currentPassword = document.getElementById('currentPassword').value;
+                const newPassword = document.getElementById('newPassword').value;
+
+                try {
+                    const res = await fetch(`/api/users/change-password/${userId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ currentPassword, newPassword })
+                    });
+                    const data = await res.json();
+                    alert(data.msg);
+                    if(res.ok) passwordForm.reset();
+                } catch (error) { console.error('Error changing password:', error); }
+            });
+        });
+    </script>
+</body>
+</html>

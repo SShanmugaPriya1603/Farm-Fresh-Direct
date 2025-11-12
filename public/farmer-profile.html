@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <title>My Profile - Farmer</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .lang-switcher-container { margin-left: 20px; }
+        .lang-switcher-container select { padding: 5px; border-radius: 4px; border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="logo">
+                <img src="assets/logo.png" alt="Logo">
+                <span>Farm Fresh Direct - Farmer Portal</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="/farmer.html">My Products</a></li>
+                <li><a href="/farmer-orders.html">Orders</a></li>
+                <li><a href="/soil-info.html">Soil Info</a></li>
+                <li><a href="/farmer-qna.html">Q&A</a></li>
+                <li><a href="/crop-insurance.html">Schemes & Insurance</a></li>
+                <li><a href="/farmer-profile.html">Profile</a></li>
+            </ul>
+            <div class="nav-actions">
+                <div class="lang-switcher-container">
+                    <select id="language-switcher">
+                        <option value="en">English</option>
+                        <option value="hi">हिन्दी</option>
+                        <option value="ta">தமிழ்</option>
+                    </select>
+                </div>
+                <a href="/index.html" class="btn-login" id="logout-btn">Logout</a>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section id="authForm" style="display: block;">
+            <h2 data-i18n="my_profile">My Profile</h2>
+            <form id="profileForm">
+                <div>
+                    <label for="username" data-i18n="username">Username:</label>
+                    <input type="text" id="username" required>
+                </div>
+                <div>
+                    <label for="name" data-i18n="full_name">Full Name:</label>
+                    <input type="text" id="name">
+                </div>
+                <div>
+                    <label for="email" data-i18n="email">Email:</label>
+                    <input type="email" id="email">
+                </div>
+                <div>
+                    <label for="phone" data-i18n="phone_number">Phone Number:</label>
+                    <input type="tel" id="phone">
+                </div>
+                <div>
+                    <label for="aadhar" data-i18n="aadhar_number">Aadhaar Number:</label>
+                    <input type="text" id="aadhar" disabled>
+                </div>
+
+                <hr style="margin: 20px 0;">
+
+                <div>
+                    <label for="experience" data-i18n="experience">Experience:</label>
+                    <textarea id="experience" rows="3" placeholder="e.g., 15+ years in organic farming."></textarea>
+                </div>
+                <div>
+                    <label for="awards" data-i18n="awards">Awards & Achievements:</label>
+                    <textarea id="awards" rows="3" placeholder="e.g., Recipient of the Krishi Karman Award."></textarea>
+                </div>
+                <div>
+                    <label for="techUsed" data-i18n="tech_used">Technology & Methods Used:</label>
+                    <textarea id="techUsed" rows="3" placeholder="e.g., Drip irrigation, solar pumps."></textarea>
+                </div>
+                <button type="submit" data-i18n="update_profile">Update Profile</button>
+            </form>
+
+            <hr style="margin: 30px 0;">
+
+            <h2 data-i18n="change_password">Change Password</h2>
+            <form id="passwordForm">
+                <div>
+                    <label for="currentPassword" data-i18n="current_password">Current Password:</label>
+                    <input type="password" id="currentPassword" required>
+                </div>
+                <div>
+                    <label for="newPassword" data-i18n="new_password">New Password:</label>
+                    <input type="password" id="newPassword" required>
+                </div>
+                <button type="submit" data-i18n="change_password_btn">Change Password</button>
+            </form>
+        </section>
+    </main>
+
+    <script>
+        document.getElementById('logout-btn').addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.clear();
+            window.location.href = '/index.html';
+        });
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const usernameInput = document.getElementById('username');
+            const nameInput = document.getElementById('name');
+            const emailInput = document.getElementById('email');
+            const phoneInput = document.getElementById('phone');
+            const aadharInput = document.getElementById('aadhar');
+            const experienceInput = document.getElementById('experience');
+            const awardsInput = document.getElementById('awards');
+            const techUsedInput = document.getElementById('techUsed');
+            const profileForm = document.getElementById('profileForm');
+            const passwordForm = document.getElementById('passwordForm');
+            const userId = localStorage.getItem('userId');
+
+            if (!userId || localStorage.getItem('userRole') !== 'farmer') {
+                window.location.href = '/index.html';
+                return;
+            }
+
+            // Fetch and display user data
+            try {
+                const res = await fetch(`/api/users/${userId}`);
+                const user = await res.json();
+                if (res.ok) {
+                    usernameInput.value = user.username;
+                    nameInput.value = user.name || '';
+                    emailInput.value = user.email || '';
+                    phoneInput.value = user.phone || '';
+                    aadharInput.value = user.aadhar || 'N/A';
+                    experienceInput.value = user.experience || '';
+                    awardsInput.value = user.awards || '';
+                    techUsedInput.value = user.techUsed || '';
+                } else {
+                    alert('Could not load profile.');
+                }
+
+                if (user.isVerified) {
+                    const title = document.querySelector('#authForm h2[data-i18n="my_profile"]');
+                    title.innerHTML += ' <i class="fas fa-check-circle" style="color: #0a7c2f;" title="Verified Farmer"></i>';
+                }
+            } catch (error) { console.error('Error fetching profile:', error); }
+
+            // Handle profile update
+            profileForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const updatedProfile = {
+                    username: usernameInput.value,
+                    name: nameInput.value,
+                    email: emailInput.value,
+                    phone: phoneInput.value,
+                    experience: experienceInput.value,
+                    awards: awardsInput.value,
+                    techUsed: techUsedInput.value
+                };
+                const res = await fetch(`/api/users/${userId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updatedProfile)
+                });
+                const data = await res.json();
+                alert(await translate(data.messageKey || data.msg));
+            });
+
+            // Handle password change
+            passwordForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const currentPassword = document.getElementById('currentPassword').value;
+                const newPassword = document.getElementById('newPassword').value;
+                const res = await fetch(`/api/users/change-password/${userId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ currentPassword, newPassword })
+                });
+                const data = await res.json();
+                alert(await translate(data.messageKey || data.msg));
+                if (res.ok) passwordForm.reset();
+            });
+
+            // --- I18n Logic ---
+            const languageSwitcher = document.getElementById('language-switcher');
+            let translations = {};
+
+            async function setLanguage(lang) {
+                localStorage.setItem('language', lang);
+                languageSwitcher.value = lang;
+                
+                const response = await fetch(`/locales/${lang}.json`);
+                translations = await response.json();
+
+                document.querySelectorAll('[data-i18n]').forEach(elem => {
+                    const key = elem.getAttribute('data-i18n');
+                    if (translations[key]) {
+                        elem.textContent = translations[key];
+                    }
+                });
+            }
+
+            async function translate(key) {
+                if (translations[key]) {
+                    return translations[key];
+                }
+                return key; // Fallback to the key itself
+            }
+
+            languageSwitcher.addEventListener('change', (e) => {
+                setLanguage(e.target.value);
+            });
+
+            // Set initial language
+            const savedLang = localStorage.getItem('language') || 'en';
+            setLanguage(savedLang);
+        });
+    </script>
+</body>
+</html>

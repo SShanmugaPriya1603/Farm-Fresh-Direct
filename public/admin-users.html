@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Users - Admin</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .admin-container { max-width: 1200px; margin: 30px auto; padding: 20px; }
+        .search-container { margin-bottom: 20px; }
+        #user-search-bar {
+            width: 100%;
+            padding: 10px;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .user-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .user-table th, .user-table td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        .user-table th { background-color: #f2f2f2; color: #333; }
+        .user-table tr:nth-child(even) { background-color: #f9f9f9; }
+        .user-table tr:hover { background-color: #f1f1f1; }
+        .role-farmer { color: #f4511e; font-weight: bold; }
+        .role-consumer { color: #0a7c2f; font-weight: bold; }
+        .verify-btn {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 5px;
+        }
+        .verify-btn.revoke { background-color: #ffc107; }
+        .delete-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .delete-btn:hover { background-color: #c82333; }
+        .delete-btn:disabled { background-color: #ccc; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="logo">
+                <img src="assets/logo.png" alt="Logo">
+                <span>Farm Fresh Direct - Admin Portal</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="/admin.html">Dashboard</a></li>
+                <li><a href="/admin-users.html">Users</a></li>
+                <li><a href="/admin-orders.html">Orders</a></li>
+                <li><a href="/admin-analytics.html">Analytics</a></li>
+            </ul>
+            <a href="/index.html" class="btn-login" id="logout-btn">Logout</a>
+        </nav>
+    </header>
+
+    <main class="admin-container">
+        <h2>User Management</h2>
+        <div class="search-container">
+            <input type="text" id="user-search-bar" placeholder="Search by username...">
+        </div>
+        <table class="user-table">
+            <thead>
+                <tr>
+                    <th>User ID</th>
+                    <th>Username</th>
+                    <th>Role</th>
+                    <th>Aadhaar (Farmers)</th>
+                    <th>Status</th>
+                    <th>Date Joined</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="user-list-body">
+                <tr><td colspan="7"><div class="spinner-container"><div class="spinner"></div></div></td></tr>
+            </tbody>
+        </table>
+    </main>
+
+    <script>
+        document.getElementById('logout-btn').addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.clear();
+            window.location.href = '/index.html';
+        });
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const userListBody = document.getElementById('user-list-body');
+            const token = localStorage.getItem('token');
+            const adminId = localStorage.getItem('userId');
+            const searchBar = document.getElementById('user-search-bar');
+            const userRole = localStorage.getItem('userRole');
+
+            if (!token || userRole !== 'admin') {
+                window.location.href = '/index.html';
+                return;
+            }
+
+            searchBar.addEventListener('input', () => {
+                const searchTerm = searchBar.value.toLowerCase();
+                const rows = userListBody.querySelectorAll('tr');
+                rows.forEach(row => {
+                    const usernameCell = row.querySelector('td[data-label="Username"]');
+                    if (usernameCell) {
+                        const username = usernameCell.textContent.toLowerCase();
+                        if (username.includes(searchTerm)) {
+                            row.style.display = '';
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    }
+                });
+            });
+
+            try {
+                const response = await fetch('/api/users/all', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch users or not authorized.');
+                }
+
+                const users = await response.json();
+                userListBody.innerHTML = ''; // Clear loading message
+
+                users.forEach(user => {
+                    // If createdAt exists use it, otherwise derive the date from the ObjectId
+                    const dateJoined = user.createdAt ? new Date(user.createdAt).toLocaleDateString() : new Date(parseInt(user._id.substring(0, 8), 16) * 1000).toLocaleDateString();
+                    const isCurrentUser = user._id === adminId;
+                    const row = document.createElement('tr');
+                    const isFarmer = user.role === 'farmer';
+                    row.dataset.userId = user._id;
+                    row.innerHTML = `
+                        <td data-label="User ID">${user._id}</td>
+                        <td data-label="Username">${user.username}</td>
+                        <td data-label="Role"><span class="role-${user.role}">${user.role.charAt(0).toUpperCase() + user.role.slice(1)}</span></td>
+                        <td data-label="Aadhaar">${user.role === 'farmer' ? user.aadhar : 'N/A'}</td>
+                        <td data-label="Status" class="verification-status">${isFarmer ? (user.isVerified ? '✅ Verified' : '❌ Not Verified') : 'N/A'}</td>
+                        <td data-label="Date Joined">${dateJoined}</td>
+                        <td data-label="Actions">
+                            ${isFarmer ? `<button class="verify-btn ${user.isVerified ? 'revoke' : ''}" data-id="${user._id}">${user.isVerified ? 'Revoke' : 'Approve'}</button>` : ''}
+                            <button class="delete-btn" data-id="${user._id}" ${isCurrentUser ? 'disabled' : ''}>Delete</button>
+                        </td>
+                    `;
+                    userListBody.appendChild(row);
+                });
+
+                userListBody.addEventListener('click', async (e) => {
+                    if (e.target.classList.contains('delete-btn')) {
+                        const userIdToDelete = e.target.dataset.id;
+                        if (confirm(`Are you sure you want to delete user ${userIdToDelete}? This cannot be undone.`)) {
+                            try {
+                                const deleteResponse = await fetch(`/api/users/${userIdToDelete}`, {
+                                    method: 'DELETE',
+                                    headers: { 'Authorization': `Bearer ${token}` }
+                                });
+                                if (deleteResponse.ok) {
+                                    document.querySelector(`tr[data-user-id="${userIdToDelete}"]`).remove();
+                                    alert('User deleted successfully.');
+                                } else {
+                                    const errorData = await deleteResponse.json();
+                                    alert(`Failed to delete user: ${errorData.msg}`);
+                                }
+                            } catch (err) { console.error('Delete error:', err); }
+                        }
+                    } else if (e.target.classList.contains('verify-btn')) {
+                        const userIdToVerify = e.target.dataset.id;
+                        try {
+                            const verifyResponse = await fetch(`/api/users/verify/${userIdToVerify}`, {
+                                method: 'PUT',
+                                headers: { 'Authorization': `Bearer ${token}` }
+                            });
+                            const data = await verifyResponse.json();
+                            if (verifyResponse.ok) {
+                                alert(data.msg);
+                                // Update UI dynamically
+                                const statusCell = document.querySelector(`tr[data-user-id="${userIdToVerify}"] .verification-status`);
+                                const button = e.target;
+                                statusCell.textContent = data.isVerified ? '✅ Verified' : '❌ Not Verified';
+                                button.textContent = data.isVerified ? 'Revoke' : 'Approve';
+                                button.classList.toggle('revoke', data.isVerified);
+                            } else {
+                                alert(`Failed to update verification: ${data.msg}`);
+                            }
+                        } catch (err) { console.error('Verification error:', err); }
+                    }
+                });
+            } catch (error) {
+                console.error('Error:', error);
+                userListBody.innerHTML = `<tr><td colspan="7" style="color: red;">${error.message}</td></tr>`;
+            }
+        });
+    </script>
+</body>
+</html>

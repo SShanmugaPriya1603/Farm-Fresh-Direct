@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Orders</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .order-card { background: #fff; border: 1px solid #eee; border-radius: 8px; margin-bottom: 20px; padding: 20px; }
+        .order-card .btn-confirm { background-color: #28a745; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; margin-top: 10px; }
+        .order-header { display: flex; justify-content: space-between; border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 10px; }
+        .order-item { display: flex; align-items: center; margin-top: 10px; }
+        .cancel-btn { background-color: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
+        .order-item img { width: 60px; height: 60px; object-fit: cover; border-radius: 4px; margin-right: 15px; }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="logo">
+                <img src="assets/logo.png" alt="Logo">
+                <a href="/consumer.html" style="text-decoration: none; color: inherit;"><span>Farm Fresh Direct</span></a>
+            </div>
+            <ul class="nav-links">
+                <li><a href="/consumer.html">Dashboard</a></li>
+                <li><a href="/orders.html">My Orders</a></li>
+                <li><a href="/feedback.html">Feedback</a></li>
+            </ul>
+            <a href="/index.html" class="btn-login" id="logout-btn">Logout</a>
+        </nav>
+    </header>
+
+    <main style="padding: 20px 5%;">
+        <h2>My Order History</h2>
+        <div id="orders-container">
+            <p>Loading your orders...</p>
+        </div>
+    </main>
+
+    <script>
+        document.getElementById('logout-btn').addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.clear();
+            window.location.href = '/index.html';
+        });
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const ordersContainer = document.getElementById('orders-container');
+            const userId = localStorage.getItem('userId');
+
+            // Move the event listener inside DOMContentLoaded
+            ordersContainer.addEventListener('click', e => {
+                if (e.target.classList.contains('cancel-btn')) {
+                    const orderId = e.target.dataset.orderId;
+                    if (confirm('Are you sure you want to cancel this order?')) {
+                        cancelOrder(orderId);
+                    }
+                } else if (e.target.classList.contains('btn-confirm')) {
+                    const orderId = e.target.dataset.orderId;
+                    if (confirm('Please confirm that you have received the items and completed the payment.')) {
+                        confirmPayment(orderId);
+                    }
+                }
+            });
+
+            if (!userId) {
+                ordersContainer.innerHTML = '<p>Please <a href="/index.html">log in</a> to see your orders.</p>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/orders/${userId}`);
+                const orders = await response.json();
+
+                if (orders.length === 0) {
+                    ordersContainer.innerHTML = '<p>You have not placed any orders yet.</p>';
+                    return;
+                }
+
+                ordersContainer.innerHTML = ''; // Clear loading message
+                orders.forEach(order => {
+                    const orderDate = new Date(order.createdAt);
+                    const isCancellable = order.status === 'Pending';
+                    const needsPaymentConfirmation = order.status === 'Delivered' && order.paymentStatus === 'Pending';
+
+                    const orderCard = document.createElement('div');
+                    orderCard.className = 'order-card';
+                    orderCard.innerHTML = `
+                        <div class="order-header">
+                            <div><strong>Order ID:</strong> ${order._id}</div>
+                            <div><strong>Date:</strong> ${orderDate.toLocaleDateString()}</div>
+                            <div><strong>Total:</strong> ₹${order.totalAmount.toFixed(2)}</div>
+                            <div><strong>Status:</strong> ${order.status}</div>
+                        </div>
+                        <p><strong>Payment:</strong> ${order.paymentMethod} (${order.paymentStatus})</p>
+                        <p><strong>Shipped to:</strong> ${order.shippingAddress}</p>
+                        ${needsPaymentConfirmation ? `<button class="btn-confirm" data-order-id="${order._id}">Confirm Received & Paid</button>` : ''}
+                        ${isCancellable ? `<button class="cancel-btn" data-order-id="${order._id}">Cancel Order</button>` : ''}
+                    `;
+                    ordersContainer.appendChild(orderCard);
+                });
+            } catch (error) {
+                console.error('Failed to fetch orders:', error);
+                ordersContainer.innerHTML = '<p>Could not load your orders. Please try again later.</p>';
+            }
+        });
+        
+        async function confirmPayment(orderId) {
+            try {
+                const res = await fetch(`/api/orders/confirm-payment/${orderId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: localStorage.getItem('userId') }) // For future security checks
+                });
+                const data = await res.json();
+                alert(data.msg);
+                if (res.ok) location.reload();
+            } catch (error) {
+                console.error('Failed to confirm payment:', error);
+            }
+        }
+
+        async function cancelOrder(orderId) {
+          try {
+              // This function was defined outside the DOMContentLoaded scope, causing an error. It is now correctly scoped.
+              const res = await fetch(`/api/orders/${orderId}`, { method: 'DELETE' });
+              const data = await res.json();
+              alert(data.msg);
+              if (res.ok) {
+                  location.reload();
+              }
+          } catch (error) {
+              console.error('Failed to cancel order:', error);
+              alert('An error occurred while cancelling the order.');
+          }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        .lang-switcher-container { margin-left: 20px; }
+        .lang-switcher-container select { padding: 5px; border-radius: 4px; border: 1px solid #ccc; }
+        .nav-actions { display: flex; align-items: center; }
+    </style>
+    <meta charset="UTF-8">
+    <title>Farmer Q&A</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .qna-container { max-width: 800px; margin: 30px auto; padding: 20px; }
+        .faq-section h3 { margin-bottom: 15px; color: #0a7c2f; }
+        .faq-question { background: #f9f9f9; padding: 10px; border: 1px solid #eee; border-radius: 5px; margin-bottom: 10px; cursor: pointer; }
+        .faq-question:hover { background: #f0f0f0; }
+        .ai-section { margin-top: 40px; }
+        #qna-form { display: flex; gap: 10px; }
+        #question-input { flex-grow: 1; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
+        #ai-answer { margin-top: 20px; padding: 15px; background: #eef7ee; border-left: 4px solid #0a7c2f; min-height: 50px; }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="logo">
+                <img src="assets/logo.png" alt="Logo">
+                <span>Farm Fresh Direct - Farmer Portal</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="/farmer.html" data-i18n="my_products">My Products</a></li>
+                <li><a href="/farmer-orders.html" data-i18n="orders">Orders</a></li>
+                <li><a href="/soil-info.html" data-i18n="soil_info">Soil Info</a></li>
+                <li><a href="/crop-insurance.html" data-i18n="schemes_insurance">Schemes & Insurance</a></li>
+                <li><a href="/farmer-qna.html" data-i18n="qna">Q&A</a></li>
+                <li><a href="/farmer-profile.html" data-i18n="profile">Profile</a></li>
+            </ul>
+            <div class="nav-actions">
+                <div class="lang-switcher-container">
+                    <select id="language-switcher">
+                        <option value="en">English</option>
+                        <option value="hi">हिन्दी</option>
+                        <option value="ta">தமிழ்</option>
+                    </select>
+                </div>
+                <a href="/index.html" class="btn-login" id="logout-btn" data-i18n="logout">Logout</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="farmer-container">
+        <h2 data-i18n="qna_title">Questions & Answers for Farmers</h2>
+        <p data-i18n="qna_desc">Get instant answers to your questions from our AI assistant.</p>
+
+        <section class="faq-section">
+            <h3 data-i18n="faq">Frequently Asked Questions</h3>
+            <div id="faq-list">
+                <div class="faq-question" data-question="How do I add a new product?">How do I add a new product?</div>
+                <div class="faq-question" data-question="How do I update an order's status?">How do I update an order's status?</div>
+                <div class="faq-question" data-question="Where can I find information on government schemes?">Where can I find information on government schemes?</div>
+                <div class="faq-question" data-question="How does the soil information lookup work?">How does the soil information lookup work?</div>
+            </div>
+        </section>
+
+        <section class="ai-section">
+            <h3 data-i18n="ask_ai">Ask our AI Assistant</h3>
+            <form id="qna-form">
+                <input type="text" id="question-input" placeholder="Type your question here..." required>
+                <button type="submit" class="btn-primary" data-i18n="ask">Ask</button>
+            </form>
+            <div id="ai-answer">
+                <p data-i18n="answer_appears_here">Your answer will appear here.</p>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        document.getElementById('logout-btn').addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.clear();
+            window.location.href = '/index.html';
+        });
+
+        document.addEventListener('DOMContentLoaded', async () => {const qnaForm = document.getElementById('qna-form');
+        const questionInput = document.getElementById('question-input');
+        const aiAnswerBox = document.getElementById('ai-answer');
+        const faqList = document.getElementById('faq-list');
+
+        qnaForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            displayAnswer(questionInput.value);
+        });
+
+        faqList.addEventListener('click', (e) => {
+            if (e.target.classList.contains('faq-question')) {
+                const question = e.target.dataset.question;
+                questionInput.value = question;
+                displayAnswer(question);
+            }
+        });
+
+        function displayAnswer(question) {
+            const answer = getAIResponse(question.toLowerCase(), currentLang);
+            aiAnswerBox.innerHTML = `<p>${answer}</p>`;
+        }
+
+        // --- I18n Logic ---
+        const languageSwitcher = document.getElementById('language-switcher');
+        let translations = {};
+        let currentLang = 'en';
+
+        const aiResponses = {
+            en: {
+                addProduct: "To add a new product, use the 'Add New Product' form on the 'My Products' page. Fill in the name, price, and an image URL, then click 'Add Product'.",
+                orderStatus: "You can change an order's status on the 'Orders' page. Find the order and use the dropdown menu to select a new status like 'Processing' or 'Shipped'.",
+                schemes: "You can find information on government schemes and crop insurance on the 'Schemes & Insurance' page, accessible from the main navigation bar.",
+                soil: "On the 'Soil Info' page, enter a city or district name into the search bar and click 'Search'. The tool will provide details on soil type, pH level, and suitable crops for that area.",
+                fallback: "I'm sorry, I can only answer questions about managing products, orders, schemes, and soil information right now. Please try rephrasing your question."
+            },
+            hi: {
+                addProduct: "नया उत्पाद जोड़ने के लिए, 'मेरे उत्पाद' पृष्ठ पर 'नया उत्पाद जोड़ें' फ़ॉर्म का उपयोग करें। नाम, मूल्य और एक छवि URL भरें, फिर 'उत्पाद जोड़ें' पर क्लिक करें।",
+                orderStatus: "आप 'ऑर्डर' पृष्ठ पर ऑर्डर की स्थिति बदल सकते हैं। ऑर्डर ढूंढें और 'प्रोसेसिंग' या 'शिप्ड' जैसी नई स्थिति चुनने के लिए ड्रॉपडाउन मेनू का उपयोग करें।",
+                schemes: "आप मुख्य नेविगेशन बार से 'योजनाएं और बीमा' पृष्ठ पर सरकारी योजनाओं और फसल बीमा की जानकारी पा सकते हैं।",
+                soil: "'मिट्टी की जानकारी' पृष्ठ पर, खोज बार में एक शहर या जिले का नाम दर्ज करें और 'खोजें' पर क्लिक करें। यह उपकरण मिट्टी के प्रकार, पीएच स्तर और उस क्षेत्र के लिए उपयुक्त फसलों का विवरण प्रदान करेगा।",
+                fallback: "मुझे खेद है, मैं अभी केवल उत्पादों, आदेशों, योजनाओं और मिट्टी की जानकारी के प्रबंधन के बारे में सवालों का जवाब दे सकता हूं। कृपया अपना प्रश्न दोबारा लिखने का प्रयास करें।"
+            },
+            ta: {
+                addProduct: "புதிய தயாரிப்பைச் சேர்க்க, 'எனது தயாரிப்புகள்' பக்கத்தில் உள்ள 'புதிய தயாரிப்பைச் சேர்' படிவத்தைப் பயன்படுத்தவும். பெயர், விலை மற்றும் பட URL-ஐ நிரப்பி, 'தயாரிப்பைச் சேர்' என்பதைக் கிளிக் செய்யவும்.",
+                orderStatus: "'ஆர்டர்கள்' பக்கத்தில் ஆர்டரின் நிலையை மாற்றலாம். ஆர்டரைக் கண்டுபிடித்து, 'செயலாக்கத்தில்' அல்லது 'அனுப்பப்பட்டது' போன்ற புதிய நிலையைத் தேர்ந்தெடுக்க கீழ்தோன்றும் மெனுவைப் பயன்படுத்தவும்.",
+                schemes: "அரசு திட்டங்கள் மற்றும் பயிர் காப்பீடு பற்றிய தகவல்களை பிரதான வழிசெலுத்தல் பட்டியில் இருந்து 'திட்டங்கள் & காப்பீடு' பக்கத்தில் காணலாம்.",
+                soil: "'மண் தகவல்' பக்கத்தில், தேடல் பட்டியில் ஒரு நகரம் அல்லது மாவட்டத்தின் பெயரை உள்ளிட்டு 'தேடு' என்பதைக் கிளிக் செய்யவும். கருவி மண் வகை, pH நிலை மற்றும் அந்த பகுதிக்கு ஏற்ற பயிர்கள் பற்றிய விவரங்களை வழங்கும்.",
+                fallback: "மன்னிக்கவும், தற்போதைக்கு தயாரிப்புகள், ஆர்டர்கள், திட்டங்கள் மற்றும் மண் தகவல்களை நிர்வகிப்பது பற்றிய கேள்விகளுக்கு மட்டுமே என்னால் பதிலளிக்க முடியும். உங்கள் கேள்வியை வேறுவிதமாகக் கேட்க முயற்சிக்கவும்."
+            }
+        };
+
+        function getAIResponse(question, lang) {
+            const responses = aiResponses[lang];
+            if (question.includes('add product') || question.includes('new product') || question.includes('उत्पाद') || question.includes('தயாரிப்பை')) return responses.addProduct;
+            if (question.includes('order status') || question.includes('update order') || question.includes('ऑर्डर') || question.includes('ஆர்டர்')) return responses.orderStatus;
+            if (question.includes('scheme') || question.includes('insurance') || question.includes('योजना') || question.includes('திட்டம்')) return responses.schemes;
+            if (question.includes('soil') || question.includes('मिट्टी') || question.includes('மண்')) return responses.soil;
+            return responses.fallback;
+        }
+
+        async function setLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('language', lang);
+            languageSwitcher.value = lang;
+            
+            const response = await fetch(`/locales/${lang}.json`);
+            translations = await response.json();
+
+            document.querySelectorAll('[data-i18n]').forEach(elem => {
+                const key = elem.getAttribute('data-i18n');
+                if (translations[key]) {
+                    elem.textContent = translations[key];
+                }
+            });
+        }
+
+        languageSwitcher.addEventListener('change', (e) => setLanguage(e.target.value));
+
+        // Set initial language
+        const savedLang = localStorage.getItem('language') || 'en';
+        await setLanguage(savedLang);
+        });
+    </script>
+</body>
+</html>

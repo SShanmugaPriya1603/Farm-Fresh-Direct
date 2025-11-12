@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Platform Analytics - Admin</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .admin-container { max-width: 1200px; margin: 30px auto; padding: 20px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+        .stat-card { background: #fff; border: 1px solid #eee; border-radius: 8px; padding: 25px; text-align: center; }
+        .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 30px; }
+        .chart-container { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .stat-card .stat-value { font-size: 2.5rem; font-weight: bold; color: #0a7c2f; }
+        .stat-card .stat-label { font-size: 1rem; color: #555; margin-top: 5px; }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="logo">
+                <img src="assets/logo.png" alt="Logo">
+                <span>Farm Fresh Direct - Admin Portal</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="/admin.html">Dashboard</a></li>
+                <li><a href="/admin-users.html">Users</a></li>
+                <li><a href="/admin-orders.html">Orders</a></li>
+                <li><a href="/admin-analytics.html">Analytics</a></li>
+            </ul>
+            <a href="/index.html" class="btn-login" id="logout-btn">Logout</a>
+        </nav>
+    </header>
+
+    <main class="admin-container">
+        <h2>Platform Analytics</h2>
+        <div id="stats-grid" class="stats-grid">
+            <!-- Stats will be loaded here -->
+            <p>Loading analytics...</p>
+        </div>
+
+        <div class="charts-grid">
+            <div class="chart-container">
+                <h3>User Distribution</h3>
+                <canvas id="userDistributionChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <h3>Sales Over Time (Last 30 Days)</h3>
+                <canvas id="salesOverTimeChart"></canvas>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.getElementById('logout-btn').addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.clear();
+            window.location.href = '/index.html';
+        });
+
+        // Function to load a script dynamically
+        function loadScript(src) {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = src;
+                script.onload = () => resolve(script);
+                script.onerror = () => reject(new Error(`Script load error for ${src}`));
+                document.head.appendChild(script);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const statsGrid = document.getElementById('stats-grid');
+            const token = localStorage.getItem('token');
+
+            try {
+                // First, load Chart.js
+                await loadScript('https://cdn.jsdelivr.net/npm/chart.js');
+
+                // Now that Chart.js is loaded, fetch the data
+                if (!token || localStorage.getItem('userRole') !== 'admin') {
+                    window.location.href = '/index.html';
+                    return;
+                }
+
+                // Fetch summary data for stats and user chart
+                const summaryResponse = await fetch('/api/analytics/summary', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!summaryResponse.ok) throw new Error('Failed to fetch summary analytics.');
+                const stats = await summaryResponse.json();
+
+                // Fetch sales data for the line chart
+                const salesResponse = await fetch('/api/analytics/sales-over-time', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!salesResponse.ok) throw new Error('Failed to fetch sales data.');
+                const salesData = await salesResponse.json();
+
+                // Render everything now that all data is available
+                renderStatCards(stats);
+                renderUserDistributionChart(stats);
+                renderSalesOverTimeChart(salesData);
+
+            } catch (error) {
+                console.error('Error:', error);
+                statsGrid.innerHTML = `<p style="color: red;">${error.message}</p>`;
+            }
+        });
+
+        function renderStatCards(stats) {
+            const statsGrid = document.getElementById('stats-grid');
+            statsGrid.innerHTML = ''; // Clear loading message
+            const statsToDisplay = [
+                { label: 'Total Revenue (Delivered)', value: `₹${stats.totalRevenue.toFixed(2)}` },
+                { label: 'Total Users', value: stats.totalUsers },
+                { label: 'Total Farmers', value: stats.totalFarmers },
+                { label: 'Total Consumers', value: stats.totalConsumers },
+                { label: 'Total Products Listed', value: stats.totalProducts },
+                { label: 'Total Orders Placed', value: stats.totalOrders }
+            ];
+            statsToDisplay.forEach(stat => {
+                const card = document.createElement('div');
+                card.className = 'stat-card';
+                card.innerHTML = `
+                    <div class="stat-value">${stat.value}</div>
+                    <div class="stat-label">${stat.label}</div>
+                `;
+                statsGrid.appendChild(card);
+            });
+        }
+
+        function renderSalesOverTimeChart(salesData) {
+            const labels = salesData.map(d => d._id);
+            const data = salesData.map(d => d.totalSales);
+
+            const ctx = document.getElementById('salesOverTimeChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Total Sales (₹)',
+                        data: data,
+                        fill: false,
+                        borderColor: 'rgb(75, 192, 192)',
+                        tension: 0.1
+                    }]
+                },
+                options: { scales: { y: { beginAtZero: true } } }
+            });
+        }
+
+        function renderUserDistributionChart(stats) {
+             const ctx = document.getElementById('userDistributionChart').getContext('2d');
+             new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['Farmers', 'Consumers'],
+                            datasets: [{
+                                label: '# of Users',
+                                data: [stats.totalFarmers, stats.totalConsumers],
+                                backgroundColor: [
+                                    'rgba(244, 81, 30, 0.5)', // Orange for Farmers
+                                    'rgba(10, 124, 47, 0.5)'  // Green for Consumers
+                                ],
+                                borderColor: [
+                                    'rgba(244, 81, 30, 1)',
+                                    'rgba(10, 124, 47, 1)'
+                                ],
+                                borderWidth: 1
+                            }]
+                        },
+                        options: { scales: { y: { beginAtZero: true } } }
+                    });
+        }
+    </script>
+</body>
+</html>
